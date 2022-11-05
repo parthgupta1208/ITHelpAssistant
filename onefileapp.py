@@ -6,7 +6,7 @@ import pyttsx3
 import speech_recognition as sr
 import tkinter as tk
 import tkinter.font as tkf
-import threading
+import webbrowser
 
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
@@ -167,7 +167,12 @@ def getsol(ssent,*args):
     cosine=np.dot(sentence_embeddings,intext_embedding)/(norm(sentence_embeddings,axis=1)*norm(intext_embedding))
     index = np.where(cosine == np.amax(cosine))
     index=list(index[0])
-    settt(dftemp['Solution'][index[0]])  
+    strans=dftemp['Solution'][index[0]]
+    if "http://" in strans or "https://" in strans:
+        webbrowser.open(strans)
+        settt("Link to Solution Opened")
+    else:
+        settt(strans)  
 
 def meow(*args):
     print("inside while loop")
@@ -175,6 +180,8 @@ def meow(*args):
     if query=="none":
         print("inside if")
         settt("Sorry, you were not audible.")
+    elif "bye" in query:
+        exit(0)
     else:
         print("inside else")
         getsol(query)
