@@ -2,6 +2,52 @@ from tkinter import *
 from tkinter import ttk
 import numpy as np
 from numpy.linalg import norm
+import pyttsx3
+import speech_recognition as sr
+import tkinter as tk
+import tkinter.font as tkf
+import threading
+
+engine = pyttsx3.init('sapi5')
+voices = engine.getProperty('voices')
+engine.setProperty('voice', voices[1].id)
+def speak(audio):
+    engine.say(audio)
+    engine.runAndWait()
+
+def settt(stringgg):
+    print("inside settt for "+stringgg)
+    global lab1
+    lab1.config(text="IT Assistant : "+stringgg)
+    lab1.update()
+    speak(stringgg)
+
+def takeCommand():
+    global lab1
+    print("inside take command")
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("inside with microphone")
+        r.adjust_for_ambient_noise(source, duration=1)
+        settt("*Listening*")
+        print("after label")
+        audio = r.listen(source)
+        query=""
+    try:
+        lab1.config(text="IT Assistant : *Recognizing*")
+        lab1.update()
+        print("after label recog")
+        query = r.recognize_google(audio, language='en-in')
+        query=query.lower()
+
+    except Exception as e:
+        print(e)
+        return "none"
+    else:
+        lab1.config(text="User : "+query)
+        lab1.update()
+        print("after setting query")
+        return query
 
 def core():
     global pb
@@ -11,7 +57,7 @@ def core():
     import numpy as np
     warnings.filterwarnings("ignore")
     import pandas as pd
-    main_df = pd.read_excel(r'C:\Users\DELL\OneDrive\Desktop\Internship\df_withoutdup_final_origi1.xlsx')
+    main_df = pd.read_excel(r'.\df_withoutdup_final_origi1.xlsx')
     dftemp=main_df.copy()
     main_df_new = pd.DataFrame()
     main_df_new["combined data"] = "-"
@@ -113,45 +159,35 @@ pb.grid(row=1,column=1,sticky="news",padx=10,pady=10)
 main.after(200, task)
 main.mainloop()
 
-def getsol(*args):
+def getsol(ssent,*args):
     global sentence_embeddings,model,preprocess,dftemp
-    intext=str(e1.get())
+    intext=ssent
     intext=preprocess(intext)
     intext_embedding=np.transpose(np.array(model.encode([intext])))
     cosine=np.dot(sentence_embeddings,intext_embedding)/(norm(sentence_embeddings,axis=1)*norm(intext_embedding))
     index = np.where(cosine == np.amax(cosine))
     index=list(index[0])
-    e2.delete(0,"end")
-    e2.insert(0,dftemp['Solution'][index[0]])
-    try:
-        e3.delete(0,"end")
-        e3.insert(0,dftemp['Solution'][index[1]])
-    except:
-        pass
-    try:
-        e4.delete(0,"end")
-        e4.insert(0,dftemp['Solution'][index[2]])
-    except:
-        pass
-    try:
-        e5.delete(0,"end")
-        e5.insert(0,dftemp['Solution'][index[3]])
-    except:
-        pass
+    settt(dftemp['Solution'][index[0]])  
 
-root=Tk()
-root.title("Query")
-l1=Label(root,text="Please Enter Your Query").grid(row=1,column=1,sticky="news",padx=10,pady=10)
-l2=Label(root,text="Recommended Solution").grid(row=2,column=1,rowspan=4,sticky="new",padx=10,pady=10)
-e1=Entry(root)
-e2=Entry(root)
-e3=Entry(root)
-e4=Entry(root)
-e5=Entry(root)
-e1.grid(row=1,column=2,sticky="news",padx=10,pady=10)
-e2.grid(row=2,column=2,sticky="news",padx=10,pady=10)
-e3.grid(row=3,column=2,sticky="news",padx=10,pady=10)
-e4.grid(row=4,column=2,sticky="news",padx=10,pady=10)
-e5.grid(row=5,column=2,sticky="news",padx=10,pady=10)
-e1.bind('<Return>', getsol)
-root.mainloop()
+def meow(*args):
+    print("inside while loop")
+    query=takeCommand()
+    if query=="none":
+        print("inside if")
+        settt("Sorry, you were not audible.")
+    else:
+        print("inside else")
+        getsol(query)
+ 
+root = tk.Tk()
+# root.attributes('-alpha',0.6)
+root.attributes('-topmost', True)
+root.overrideredirect(1)
+root.geometry('600x500-500+200')
+filename = tk.PhotoImage(file = "helpdesk.png")
+fs=tkf.Font(family='Impact',size=11)
+lab1 = tk.Label(root, text="",pady=50,wraplength=200,image=filename,compound=CENTER,font=fs,foreground='black')
+lab1.pack()
+root.bind('<space>',meow) 
+root.bind('<Map>',settt("Hello, This is your personal IT help assistant! How may I help you? Press spacebar and tell your issues."))
+root.mainloop() 
