@@ -7,6 +7,16 @@ import speech_recognition as sr
 import tkinter as tk
 import tkinter.font as tkf
 import webbrowser
+import pandas as pd
+import warnings
+import numpy as np
+import string
+import nltk
+import re
+from nltk.stem import WordNetLemmatizer
+from string import punctuation
+from nltk.corpus import stopwords
+
 
 engine = pyttsx3.init('sapi5')
 voices = engine.getProperty('voices')
@@ -53,10 +63,9 @@ def core():
     global pb
     global main,mainl
     global sentence_embeddings,model,preprocess,dftemp
-    import warnings
-    import numpy as np
+    
     warnings.filterwarnings("ignore")
-    import pandas as pd
+   
     main_df = pd.read_excel(r'.\df_withoutdup_final_origi1.xlsx')
     dftemp=main_df.copy()
     main_df_new = pd.DataFrame()
@@ -66,12 +75,6 @@ def core():
     pb['value']+=20
     mainl.config(text="Performing Preprocessing")
     main.update()
-    import string
-    import nltk
-    import re
-    from nltk.stem import WordNetLemmatizer
-    from string import punctuation
-    from nltk.corpus import stopwords
 
     nltk.download('punkt')
     nltk.download('stopwords')
